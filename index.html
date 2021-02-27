@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge,chrome=1">
+        <meta name="renderer" content="webkit" />
+        <meta name="keywords" content="" />
+        <meta name="description" content="" />
+        <script src="jquery-3.5.1.js"></script>
+        <title>分页列表再复习</title>
+        <style>
+            #content table{border:2px solid black;}
+            #content table td{border:2px solid black;}
+            #content ul{background:#ccc;text-align: center;}
+            #content ul li{list-style-type: none;display:inline-block;line-height:30px;border:1px solid blue;width:50px;text-align: center;cursor:pointer}
+            #content ul li.active{background:red}
+        </style>
+    </head>
+    <body>
+        <div id="content">
+                           
+        </div>
+    </body>
+    <script>
+        $(function(){
+            var result;
+            var pageSize=5;
+            var curPage=1;
+            $.ajax({
+                type:'get',
+                dataType:'json',
+                url:'./dianying.json',
+                async:true,  //这里要改成同步否则后面都获取不到#content里边的元素
+                success:function(data){
+                    
+                    result=data.result
+                    
+                    output(result,curPage)
+                    
+                },
+                error:function(e){
+                    console.log(e.status)
+                    console.log(e.responseText)
+                }
+            })
+
+
+            //生成内容列表、分页按钮
+            function output(result,curPage){
+                //生成内容数据=========================================
+                var arr=result.slice(pageSize*curPage-pageSize,pageSize*curPage)   
+                          
+                var str=`<table>
+                    <thead><tr><th colspan="2">电影标题和影星</th></tr></thead>                
+                `;
+                for(var i=0;i<pageSize;i++){
+                    // console.log(result[i].title)  
+                    str+=`<tr>
+                        <td>${arr[i].title}</td>
+                        <td>${arr[i].actors}</td>
+                        </tr>
+                    `
+                }
+                str+=`</table>`
+                $('#content').html(str)
+
+
+                //生成分页按钮=========================================
+                var totalPage=result.length/pageSize;
+                var list=`<ul class="pagination">`;
+                //首页按钮
+                if(curPage!=1){
+                    list+=`<li index='1'>首页</li>`
+                }
+                //中间数字按钮
+                for(var i=0;i<totalPage;i++){
+                    if(curPage==i+1){
+                        list+=`<li class="active" index='${i+1}'>${i+1}</li>`
+                    }else{
+                        list+=`<li index='${i+1}'>${i+1}</li>`
+                    }
+                    
+                }
+                //末页按钮
+                if(curPage!=totalPage){
+                    list+=`<li index='${totalPage}'>末页</li>`
+                }
+
+                list+=`</ul>`
+                $('#content .pagination').remove()
+                $('#content').append(list)
+
+                //分页按钮的点击事件
+                $('.pagination li').click(function(){
+                    
+                    curPage=$(this).attr('index')       
+                    console.log(arr[0].title)        
+                    output(result,curPage)
+                })
+                                
+            }
+  
+
+        })
+    </script>
+</html>
